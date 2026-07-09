@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kapadokya Erasmus Tour 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,700&family=Manrope:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <video
+      class="site-bg-video"
+      autoplay
+      muted
+      loop
+      playsinline
+      aria-hidden="true"
+      poster="images/jpg/IMG_2407.jpg"
+    >
+      <source src="images/mp4/background-video.mp4" type="video/mp4" />
+    </video>
+    <header class="hero">
+      <div class="hero__overlay"></div>
+      <div class="container hero__content">
+        <div class="lang-switch" id="langSwitch" aria-label="Language switcher">
+          <button id="langEn" class="lang-btn lang-btn--active" type="button">
+            EN
+          </button>
+          <button id="langHu" class="lang-btn" type="button">HU</button>
+        </div>
+        <p class="eyebrow" data-i18n="eyebrow">Erasmus Diary</p>
+        <h1 data-i18n="heroTitle">Kapadokya Tour 2026</h1>
+        <p class="subtitle" data-i18n="heroSubtitle">
+          3 weeks across valleys, underground cities, and sunrise skies.
+        </p>
+        <div class="hero__meta" id="tripMeta"></div>
+      </div>
+    </header>
+
+    <main>
+      <section class="section">
+        <div class="container two-col">
+          <div>
+            <h2 data-i18n="routeTitle">Your Route Map</h2>
+            <p data-i18n="routeIntro">
+              This route is ready to be replaced with your exact dates and
+              stops. Send me your day-by-day locations and I will update it.
+            </p>
+            <div class="map-sidebar">
+              <div class="map-sidebar__controls">
+                <div class="day-picker">
+                  <label for="daySelect" data-i18n="daySelectLabel"
+                    >Choose day</label
+                  >
+                  <select id="daySelect" aria-label="Choose day"></select>
+                </div>
+              </div>
+              <div id="guestMapNotice" class="map-access-note" role="status">
+                <strong data-i18n="guestMapTitle">View-only map</strong>
+                <p data-i18n="guestMapHint">
+                  Log in to unlock professional map configuration tools.
+                </p>
+              </div>
+              <div
+                id="routeEditorPanel"
+                class="map-sidebar__panel route-editor-panel hidden"
+                data-auth-required="true"
+              >
+                <div class="map-sidebar__panel-header">
+                  <h3 data-i18n="routeEditorTitle">Route Builder</h3>
+                  <p data-i18n="routeEditorHint">
+                    Create and manage travel connections between markers.
+                  </p>
+                </div>
+                <div class="route-creator">
+                  <label>
+                    <span data-i18n="routeStartLabel">Start</span>
+                    <select id="routeStartSelect"></select>
+                  </label>
+                  <label>
+                    <span data-i18n="routeEndLabel">End</span>
+                    <select id="routeEndSelect"></select>
+                  </label>
+                  <label>
+                    <span data-i18n="routeTypeLabel">Route type</span>
+                    <select id="routeTypeSelect">
+                      <option value="drive" data-i18n="routeTypeDrive">
+                        Driving
+                      </option>
+                      <option value="flight" data-i18n="routeTypeFlight">
+                        Flight
+                      </option>
+                    </select>
+                  </label>
+                  <button
+                    id="createRouteBtn"
+                    class="button button--primary"
+                    type="button"
+                    data-i18n="routeCreateButton"
+                  >
+                    Create route
+                  </button>
+                </div>
+                <div id="routeList" class="route-list"></div>
+              </div>
+              <div class="map-workspace hidden" id="mapWorkspace" data-auth-required="true">
+                <div class="map-workspace__header">
+                  <div>
+                    <h3 data-i18n="mapManagerTitle">Map Configuration Studio</h3>
+                    <p data-i18n="mapManagerHint">
+                      Manage layers, markers, routes, shapes, styles, views, and saved configurations.
+                    </p>
+                  </div>
+                  <span id="mapActionStatus" class="map-action-status" role="status"></span>
+                </div>
+
+                <div class="map-tools-grid">
+                  <section class="map-tool-panel" aria-labelledby="layerToolsTitle">
+                    <h4 id="layerToolsTitle" data-i18n="layerToolsTitle">Layer management</h4>
+                    <div class="tool-form">
+                      <label>
+                        <span data-i18n="layerNameLabel">Layer name</span>
+                        <input id="layerNameInput" type="text" placeholder="Sightseeing layer" />
+                      </label>
+                      <div class="tool-row">
+                        <button id="createLayerBtn" class="button button--primary button--small" type="button" data-i18n="layerCreateButton">Create layer</button>
+                        <button id="renameLayerBtn" class="button button--secondary button--small" type="button" data-i18n="layerRenameButton">Rename</button>
+                      </div>
+                    </div>
+                    <div id="layerList" class="config-list"></div>
+                  </section>
+
+                  <section class="map-tool-panel" aria-labelledby="drawToolsTitle">
+                    <h4 id="drawToolsTitle" data-i18n="drawToolsTitle">Draw and modify areas</h4>
+                    <div class="tool-form">
+                      <label>
+                        <span data-i18n="drawTypeLabel">Shape type</span>
+                        <select id="drawTypeSelect">
+                          <option value="line" data-i18n="drawLineOption">Line / route</option>
+                          <option value="polygon" data-i18n="drawPolygonOption">Polygon / area</option>
+                        </select>
+                      </label>
+                      <label>
+                        <span data-i18n="shapeNameLabel">Shape name</span>
+                        <input id="shapeNameInput" type="text" placeholder="Custom route or area" />
+                      </label>
+                      <div class="tool-row">
+                        <button id="startDrawingBtn" class="button button--primary button--small" type="button" data-i18n="drawStartButton">Start drawing</button>
+                        <button id="finishDrawingBtn" class="button button--secondary button--small" type="button" data-i18n="drawFinishButton">Finish</button>
+                        <button id="cancelDrawingBtn" class="button button--secondary button--small" type="button" data-i18n="drawCancelButton">Cancel</button>
+                      </div>
+                    </div>
+                    <div id="shapeList" class="config-list"></div>
+                  </section>
+
+                  <section class="map-tool-panel" aria-labelledby="styleToolsTitle">
+                    <h4 id="styleToolsTitle" data-i18n="styleToolsTitle">Styles and appearance</h4>
+                    <div class="tool-form compact-form">
+                      <label>
+                        <span data-i18n="themeLabel">Theme</span>
+                        <select id="mapThemeSelect">
+                          <option value="classic" data-i18n="themeClassic">Classic</option>
+                          <option value="sunset" data-i18n="themeSunset">Sunset</option>
+                          <option value="forest" data-i18n="themeForest">Forest</option>
+                          <option value="midnight" data-i18n="themeMidnight">Midnight</option>
+                        </select>
+                      </label>
+                      <label>
+                        <span data-i18n="routeColorLabel">Route color</span>
+                        <input id="routeColorInput" type="color" value="#8a4f2e" />
+                      </label>
+                      <label>
+                        <span data-i18n="markerColorLabel">Marker color</span>
+                        <input id="defaultMarkerColorInput" type="color" value="#ff9f00" />
+                      </label>
+                      <label>
+                        <span data-i18n="shapeColorLabel">Shape color</span>
+                        <input id="shapeColorInput" type="color" value="#2d74da" />
+                      </label>
+                      <label>
+                        <span data-i18n="lineWeightLabel">Line weight</span>
+                        <input id="lineWeightInput" type="range" min="2" max="10" value="4" />
+                      </label>
+                    </div>
+                  </section>
+
+                  <section class="map-tool-panel" aria-labelledby="viewToolsTitle">
+                    <h4 id="viewToolsTitle" data-i18n="viewToolsTitle">Default view and map type</h4>
+                    <div class="tool-form compact-form">
+                      <label>
+                        <span data-i18n="mapTypeLabel">Map type</span>
+                        <select id="mapTypeSelect">
+                          <option value="street" data-i18n="mapTypeStreet">Street</option>
+                          <option value="topographic" data-i18n="mapTypeTopo">Topographic</option>
+                          <option value="satellite" data-i18n="mapTypeSatellite">Satellite</option>
+                          <option value="dark" data-i18n="mapTypeDark">Dark</option>
+                        </select>
+                      </label>
+                      <label>
+                        <span data-i18n="zoomLevelLabel">Default zoom</span>
+                        <input id="defaultZoomInput" type="number" min="3" max="19" value="10" />
+                      </label>
+                      <label>
+                        <span data-i18n="defaultLatLabel">Default latitude</span>
+                        <input id="defaultLatInput" type="number" min="-90" max="90" step="0.00001" />
+                      </label>
+                      <label>
+                        <span data-i18n="defaultLngLabel">Default longitude</span>
+                        <input id="defaultLngInput" type="number" min="-180" max="180" step="0.00001" />
+                      </label>
+                      <div class="tool-row">
+                        <button id="captureViewBtn" class="button button--secondary button--small" type="button" data-i18n="captureViewButton">Use current view</button>
+                        <button id="applyMapConfigBtn" class="button button--primary button--small" type="button" data-i18n="applyConfigButton">Apply</button>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="map-tool-panel map-tool-panel--wide" aria-labelledby="configToolsTitle">
+                    <h4 id="configToolsTitle" data-i18n="configToolsTitle">Saved configurations</h4>
+                    <div class="tool-form">
+                      <div class="tool-row">
+                        <button id="saveConfigBtn" class="button button--primary button--small" type="button" data-i18n="saveConfigButton">Save configuration</button>
+                        <button id="loadConfigBtn" class="button button--secondary button--small" type="button" data-i18n="loadConfigButton">Load saved</button>
+                        <button id="resetConfigBtn" class="button button--danger button--small" type="button" data-i18n="resetConfigButton">Reset custom map</button>
+                      </div>
+                      <label>
+                        <span data-i18n="configJsonLabel">Configuration JSON</span>
+                        <textarea id="configJsonOutput" rows="5"></textarea>
+                      </label>
+                    </div>
+                  </section>
+                </div>
+              </div>
+              <div class="map-sidebar__panel hidden" id="markerPanel" data-auth-required="true">
+                <div class="map-sidebar__panel-header marker-panel-header">
+                  <div>
+                    <h3 data-i18n="markerPanelTitle">Day Markers</h3>
+                    <p id="markerPanelHint" data-i18n="markerPanelHint">
+                      Select a day, then click the map to add a marker.
+                    </p>
+                  </div>
+                  <button
+                    id="addMarkerBtn"
+                    class="button button--primary button--small hidden"
+                    type="button"
+                    data-i18n="markerAddButton"
+                  >
+                    + Add Marker
+                  </button>
+                </div>
+                <div id="markerList" class="marker-list"></div>
+                <form
+                  id="markerForm"
+                  class="marker-form hidden"
+                  aria-hidden="true"
+                >
+                  <div class="marker-form__row">
+                    <label>
+                      <span data-i18n="markerTitleLabel">Marker title</span>
+                      <input
+                        id="markerTitle"
+                        type="text"
+                        placeholder="Name or place"
+                      />
+                    </label>
+                  </div>
+                  <div class="marker-form__row">
+                    <label>
+                      <span data-i18n="markerDescriptionLabel"
+                        >Description</span
+                      >
+                      <textarea
+                        id="markerDescription"
+                        rows="3"
+                        placeholder="Brief notes"
+                      ></textarea>
+                    </label>
+                  </div>
+                  <div class="marker-form__row marker-form__grid">
+                    <label>
+                      <span data-i18n="markerTimeLabel">Time</span>
+                      <input id="markerTime" type="time" />
+                    </label>
+                    <label>
+                      <span data-i18n="markerPhotosLabel">Photos</span>
+                      <input
+                        id="markerPhotos"
+                        type="text"
+                        placeholder="image1.jpg, image2.jpg"
+                      />
+                    </label>
+                  </div>
+                  <div class="marker-form__row marker-form__grid">
+                    <label>
+                      <span data-i18n="markerIconLabel">Icon type</span>
+                      <select id="markerIconType">
+                        <option value="default" data-i18n="markerIconDefault">
+                          Default
+                        </option>
+                        <option value="hotel" data-i18n="markerIconHotel">
+                          Hotel
+                        </option>
+                        <option value="flight" data-i18n="markerIconFlight">
+                          Flight
+                        </option>
+                        <option value="landmark" data-i18n="markerIconLandmark">
+                          Landmark
+                        </option>
+                      </select>
+                    </label>
+                    <label>
+                      <span data-i18n="markerColorLabel">Color</span>
+                      <input id="markerColor" type="color" value="#ff9f00" />
+                    </label>
+                  </div>
+                  <div class="marker-form__coords">
+                    Coordinates: <span id="markerCoords">–</span>
+                  </div>
+                  <div class="marker-form__actions">
+                    <button
+                      id="saveMarkerBtn"
+                      class="button button--primary"
+                      type="button"
+                    >
+                      Save marker
+                    </button>
+                    <button
+                      id="cancelMarkerBtn"
+                      class="button button--secondary"
+                      type="button"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      id="deleteMarkerBtn"
+                      class="button button--danger hidden"
+                      type="button"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <ul class="stats" id="tripStats"></ul>
+          </div>
+          <div id="routeMap" aria-label="Kapadokya route map"></div>
+        </div>
+      </section>
+
+      <section class="section section--light programme-section">
+        <div class="container">
+          <h2 data-i18n="programmeTitle">Programme by Day</h2>
+          <p data-i18n="programmeIntro">
+            Select a day to view the exact route and hour-by-hour plan.
+          </p>
+          <div id="itineraryList" class="timeline"></div>
+        </div>
+      </section>
+
+      <section class="section section--light">
+        <div class="container">
+          <h2 data-i18n="calendarTitle">Program Calendar</h2>
+          <p data-i18n="calendarIntro">
+            Choose a date to see that day's photos and route.
+          </p>
+          <div id="calendarGrid" class="calendar-grid"></div>
+          <div id="daySummary" class="day-summary"></div>
+          <h2
+            style="margin-top: 90px"
+            class="photo-memories-title"
+            data-i18n="photosTitle"
+          >
+            Photo Memories
+          </h2>
+          <p data-i18n="photosIntro">
+            Add your photo files to the <strong>images/</strong> folder and
+            update image paths in <strong>script.js</strong>.
+          </p>
+          <p class="albums-help" data-i18n="albumsHelp">
+            Open a folder to browse with arrows.
+          </p>
+          <div id="programTabs" class="tabs" aria-label="Program filters"></div>
+          <div id="galleryGrid" class="gallery"></div>
+        </div>
+      </section>
+    </main>
+
+    <div id="viewer" class="viewer" aria-hidden="true">
+      <button
+        id="viewerClose"
+        class="viewer__close"
+        type="button"
+        aria-label="Close"
+      >
+        ×
+      </button>
+      <button
+        id="viewerPrev"
+        class="viewer__nav viewer__nav--prev"
+        type="button"
+        aria-label="Previous"
+      >
+        ❮
+      </button>
+      <div id="viewerStage" class="viewer__stage"></div>
+      <button
+        id="viewerNext"
+        class="viewer__nav viewer__nav--next"
+        type="button"
+        aria-label="Next"
+      >
+        ❯
+      </button>
+      <div id="viewerCaption" class="viewer__caption"></div>
+    </div>
+
+    <footer class="footer">
+      <div class="container">
+        <p data-i18n="footerText"></p>
+      </div>
+    </footer>
+
+    <div id="authOverlay" class="auth-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="authPanelTitle">
+      <div id="authPanel" class="auth-panel">
+        <div class="map-sidebar__panel-header">
+          <h3 id="authPanelTitle" data-i18n="authTitle">Planner Access</h3>
+          <p id="authStatus" class="auth-status" data-i18n="authHint">
+            Log in to unlock editing tools.
+          </p>
+        </div>
+        <form id="loginForm" class="auth-form hidden">
+          <label>
+            <span data-i18n="authUsernameLabel">Username</span>
+            <input id="authUsername" type="text" autocomplete="username" />
+          </label>
+          <label>
+            <span data-i18n="authPasswordLabel">Password</span>
+            <input id="authPassword" type="password" autocomplete="current-password" />
+          </label>
+          <div class="auth-actions">
+            <button id="loginBtn" class="button button--primary" type="button" data-i18n="authLoginButton">
+              Log in
+            </button>
+            <button id="logoutBtn" class="button button--secondary hidden" type="button" data-i18n="authLogoutButton">
+              Log out
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <button
+      id="authToggleBtn"
+      class="button auth-float-btn"
+      type="button"
+      aria-label="Log in"
+    >
+      <span class="auth-float-icon">🔐</span>
+      <span id="authToggleLabel" class="sr-only" data-i18n="authToggleButton">Log in</span>
+    </button>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
